@@ -23,6 +23,50 @@ def mod_crop(img, scale):
     return img
 
 
+def single_random_crop(img_gts, gt_patch_size, scale, gt_path=None):
+    """Single random crop. Support Numpy array and Tensor inputs.
+
+    It crops lists of gt images with corresponding locations.
+
+    Args:
+        img_gts (list[ndarray] | ndarray | list[Tensor] | Tensor): GT images. Note that all images
+            should have the same shape. If the input is an ndarray, it will
+            be transformed to a list containing itself.
+        gt_patch_size (int): GT patch size.
+        scale (int): Scale factor.
+        gt_path (str): Path to ground-truth. Default: None.
+
+    Returns:
+        list[ndarray] | ndarray: GT images. If returned results
+            only have one element, just return ndarray.
+    """
+
+    if not isinstance(img_gts, list):
+        img_gts = [img_gts]
+
+    # determine input type: Numpy array or Tensor
+    input_type = 'Tensor' if torch.is_tensor(img_gts[0]) else 'Numpy'
+
+    if input_type == 'Tensor':
+        h_gt, w_gt = img_gts[0].size()[-2:]
+    else:
+        h_gt, w_gt = img_gts[0].shape[0:2]
+
+    # randomly choose top and left coordinates for gt patch
+    top = random.randint(0, h_gt - gt_patch_size)
+    left = random.randint(0, w_gt - gt_patch_size)
+
+    # crop gt patch
+    if input_type == 'Tensor':
+        img_gts = [v[:, :, top:top + gt_patch_size, left:left + gt_patch_size] for v in img_gts]
+    else:
+        img_gts = [v[top:top + gt_patch_size, left:left + gt_patch_size, ...] for v in img_gts]
+
+    if len(img_gts) == 1:
+        img_gts = img_gts[0]
+    return img_gts
+
+
 def paired_random_crop(img_gts, img_lqs, gt_patch_size, scale, gt_path=None):
     """Paired random crop. Support Numpy array and Tensor inputs.
 

@@ -1,3 +1,4 @@
+import os
 import logging
 import torch
 from os import path as osp
@@ -7,6 +8,8 @@ from basicsr.models import build_model
 from basicsr.utils import get_env_info, get_root_logger, get_time_str, make_exp_dirs
 from basicsr.utils.options import dict2str, parse_options
 
+
+os.environ['CUDA_VISIBLE_DEVICES'] = '2,3'
 
 def test_pipeline(root_path):
     # parse options, set distributed setting, set ramdom seed
